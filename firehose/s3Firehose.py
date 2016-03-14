@@ -14,6 +14,7 @@ limitations under the License.
 from __future__ import print_function
 
 import gzip
+import urllib
 
 from boto3 import client
 
@@ -43,7 +44,7 @@ def hose_names():
 
 def hydrant(event,context):
     bucket = event['Records'][0]['s3']['bucket']['name']
-    key = event['Records'][0]['s3']['object']['key']
+    key = urllib.unquote_plus(event['Records'][0]['s3']['object']['key']).decode('utf8')
     
     all_records = []
 
