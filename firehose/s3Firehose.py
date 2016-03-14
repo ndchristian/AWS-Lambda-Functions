@@ -15,7 +15,8 @@ limitations under the License.
 # All files need to gzipped for this lambda function to work.
 
 # Firehose names must have a "prefix" in them so the function can identify which firehoses to use.
-# Example the firhose name would be "lambda-example_firehose" and the prefix would be "lambda".
+# Example the firehose name would be "lambda-example_firehose" and the prefix would be "lambda".
+# Firehose names must have "-" separating the prefix and the actual name of the firehose.
 
 
 from __future__ import print_function
@@ -24,7 +25,6 @@ import gzip
 import urllib
 
 from boto3 import client
-
 
 # Prefix in the firehose names to identify which firehoses you wish to activate
 PREFIX_HOOK = ''
@@ -38,15 +38,15 @@ def hose_names():
     firehose_names = []
     for name in FH.list_delivery_streams()['DeliveryStreamNames']:
         stream_name = FH.describe_delivery_stream(
-                DeliveryStreamName=name)['DeliveryStreamDescription']['DeliveryStreamName']
+            DeliveryStreamName=name)['DeliveryStreamDescription']['DeliveryStreamName']
 
-        if PREFIX_HOOK in stream_name:
+        if "%s-" % PREFIX_HOOK in stream_name:
             firehose_names.append(stream_name)
 
     return firehose_names
 
 
-def hydrant(event,context):
+def hydrant(event, context):
     print("Loading function...")
 
     bucket = event['Records'][0]['s3']['bucket']['name']
