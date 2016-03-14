@@ -1,2 +1,3 @@
-# lambda_functions
-Various AWS Lambda function examples in python.
+# AWS-Lambda-Functions
+
+Examples of various AWS Lambda functions.
