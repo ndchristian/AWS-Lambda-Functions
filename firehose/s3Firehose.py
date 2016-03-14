@@ -26,12 +26,10 @@ PREFIX_HOOK = ''
 FH = client('firehose')
 S3 = client('s3')
 
-print("Loading function...")
 
 def hose_names():
     # Gathers all firehoses with the correct prefix
     firehose_names = []
-
     for name in FH.list_delivery_streams()['DeliveryStreamNames']:
         stream_name = FH.describe_delivery_stream(
                 DeliveryStreamName=name)['DeliveryStreamDescription']['DeliveryStreamName']
@@ -43,10 +41,13 @@ def hose_names():
 
 
 def hydrant(event,context):
+    print("Loading function...")
+
     bucket = event['Records'][0]['s3']['bucket']['name']
     key = urllib.unquote_plus(event['Records'][0]['s3']['object']['key']).decode('utf8')
-    
+
     all_records = []
+    firehose_names = hose_names()
 
     S3.download_file(bucket, key, '/tmp/%s' % (key.split('/')[-1]))
 
@@ -56,14 +57,14 @@ def hydrant(event,context):
 
             # Firehoses "put_record_batch" only accepts 500 or less entries
             if len(all_records) == 500:
-                for steam_name in hose_names():
+                for steam_name in firehose_names:
                     FH.put_record_batch(DeliveryStreamName=steam_name,
                                         Records=all_records)
 
                 del all_records[:]
 
-    for steam_name in hose_names():
+    for steam_name in firehose_names:
         FH.put_record_batch(DeliveryStreamName=steam_name,
                             Records=all_records)
 
-print("Done!")
+    print("Done!")
