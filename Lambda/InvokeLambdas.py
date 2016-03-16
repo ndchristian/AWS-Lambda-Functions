@@ -23,6 +23,7 @@ from __future__ import print_function
 from json import dumps
 
 from boto3 import client
+from botocore import exceptions
 
 LAMBDACLI = client('lambda')
 
@@ -31,16 +32,11 @@ LAMBDACLI = client('lambda')
 FUNCTION_NAMES = []
 
 
-def verify_functions(function_names=FUNCTION_NAMES):
-    return [function['FunctionName']
-            for function in LAMBDACLI.list_functions()['Functions'] if function['FunctionName'] in function_names]
-
-
 def execute_functions(event, context):
     print("Loading Function...")
-
-    for function in verify_functions(function_names=FUNCTION_NAMES):
-        LAMBDACLI.invoke(FunctionName=function,
-                         Payload=dumps(event))
-
-    print("Done!")
+    try:
+        for function in FUNCTION_NAMES:
+            LAMBDACLI.invoke(FunctionName=function,
+                             Payload=dumps(event))
+    except exceptions.ClientError as error:
+        print(error)
