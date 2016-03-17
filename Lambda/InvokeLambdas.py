@@ -34,9 +34,12 @@ FUNCTION_NAMES = []
 
 def execute_functions(event, context):
     print("Loading Function...")
+
     try:
         for function in FUNCTION_NAMES:
             LAMBDACLI.invoke(FunctionName=function,
                              Payload=dumps(event))
     except exceptions.ClientError as error:
         print(error)
+
+    print("Done!")
