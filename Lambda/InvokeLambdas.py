@@ -15,7 +15,6 @@ limitations under the License.
 # This AWS Lambda function allows the user to invoke other AWS Lambda functions from one event.
 
 # You need to make false events with the function names you are invoking.
-# I used a S3 "folder" with a "subdirectory" for each function.
 # It does not matter what false events these are because the data from the event will be passed from this function.
 
 from __future__ import print_function
