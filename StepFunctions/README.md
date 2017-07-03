@@ -1,0 +1,1 @@
+This provides a solution to AWS Step Functions not being able to execute the same function in parallel. sfn_parallel.py needs to e apart of the main step function state machine, while the function you want to execute needs to be apart of a seperate state machine.
