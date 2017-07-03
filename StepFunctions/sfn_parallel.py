@@ -47,9 +47,9 @@ def loop(event, context):
             if sfn_details['status'] in 'SUCCEEDED':
                 for retry in range(3):  # Just in case AWS is just being slow with returning the outputs
                     try:
-                        output_check = sfn_client.describe_execution(executionArn=exe)['output']
-                        if 'null' not in output_check:  # Lambda function returns null if there is no output
-                            sfn_output.append(json.loads(sfn_details['output']))
+                        execution_details = sfn_client.describe_execution(executionArn=exe)['output']
+                        if 'null' not in execution_details:  # Lambda function returns null if there is no output
+                            sfn_output.append(json.loads(execution_details['output']))
                         break
                     except KeyError:
                         time.sleep(1)
