@@ -58,6 +58,7 @@ def loop(event, context):
                 sfn_executions.remove(exe)
 
             if sfn_details['status'] in 'RUNNING':
+                time.sleep(1) # Allows some breathing room so describe_execution() isn't being called so quickly
                 pass
 
             if sfn_details['status'] in 'TIMED_OUT':  # Timed out behavior might need to be adjusted later
