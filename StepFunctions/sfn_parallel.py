@@ -44,7 +44,7 @@ def loop(event, context):
     while sfn_executions:
         for exe in sfn_executions:
             sfn_details = sfn_client.describe_execution(executionArn=exe)
-            if 'SUCCEEDED' in sfn_details['status']:
+            if sfn_details['status'] in 'SUCCEEDED':
                 for retry in range(3):  # Just in case AWS is just being slow with returning the outputs
                     try:
                         output_check = sfn_client.describe_execution(executionArn=exe)['output']
@@ -57,7 +57,7 @@ def loop(event, context):
 
                 sfn_executions.remove(exe)
 
-            if 'RUNNING' in sfn_details['status']:
+            if sfn_details['status'] in 'RUNNING':
                 pass
 
             if sfn_details['status'] in 'TIMED_OUT':  # Timed out behavior might need to be adjusted later
