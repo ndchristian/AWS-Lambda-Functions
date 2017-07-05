@@ -40,18 +40,24 @@ def loop(event, context):
         for exe in sfn_executions:
             try:
                 sfn_details = sfn_client.describe_execution(executionArn=exe)
-            except ClientError:
-                time.sleep(1)  # Back off for a second if throttling occurs
-                continue
+            except ClientError as PossibleThrottlingError:
+                if 'Throttling' in str(PossibleThrottlingError):
+                    time.sleep(1)  # Back off for a second if throttling occurs
+                    continue
+                else:
+                    raise PossibleThrottlingError
 
             if sfn_details['status'] in 'SUCCEEDED':
                 for retry in range(3):  # Just in case AWS is just being slow with returning the outputs
                     try:
                         try:
                             execution_details = sfn_client.describe_execution(executionArn=exe)['output']
-                        except ClientError:
-                            time.sleep(1)  # Back off for a second if throttling occurs
-                            continue
+                        except ClientError as PossibleError:
+                            if 'Throttling' in str(PossibleError):
+                                time.sleep(1)  # Back off for a second if throttling occurs
+                                continue
+                            else:
+                                raise PossibleError
 
                         if 'null' not in execution_details:  # Lambda function returns null if there is no output
                             sfn_output.append(json.loads(execution_details))
