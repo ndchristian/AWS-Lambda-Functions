@@ -41,7 +41,7 @@ def loop(event, context):
             try:
                 sfn_details = sfn_client.describe_execution(executionArn=exe)
             except ClientError as PossibleThrottlingError:
-                if 'Throttling' in str(PossibleThrottlingError):
+                if '(ThrottlingException)' in str(PossibleThrottlingError):
                     time.sleep(1)  # Back off for a second if throttling occurs
                     continue
                 else:
@@ -51,9 +51,9 @@ def loop(event, context):
                 for retry in range(3):  # Just in case AWS is just being slow with returning the outputs
                     try:
                         execution_details = sfn_client.describe_execution(executionArn=exe)['output']
-                        
+
                     except ClientError as PossibleError:
-                        if 'Throttling' in str(PossibleError):
+                        if '(ThrottlingException)' in str(PossibleError):
                             time.sleep(1)  # Back off for a second if throttling occurs
                             continue
                         else:
