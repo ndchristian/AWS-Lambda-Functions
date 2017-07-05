@@ -1,4 +1,3 @@
-
 """
 Copyright 2017 Nicholas Christian
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,15 +23,10 @@ sfn_client = boto3.client('stepfunctions')
 
 def parallel_execute(event):
     """ Allows you to execute the same function in parallel in AWS Step Functions"""
-    sfn_executions = []
-    for sfn_input in range(len(event)):
-        sfn_exe = sfn_client.start_execution(
-            stateMachineArn=STATE_MACHINE_ARN,
-            input=str(json.dumps(sfn_input)))
 
-        sfn_executions.append(sfn_exe['executionArn'])
-
-    return sfn_executions
+    return [
+        sfn_client.start_execution(stateMachineArn=STATE_MACHINE_ARN, input=str(json.dumps(sfn_input)))['executionArn']
+        for sfn_input in range(len(event))]
 
 
 def loop(event, context):
@@ -58,7 +52,7 @@ def loop(event, context):
                 sfn_executions.remove(exe)
 
             if sfn_details['status'] in 'RUNNING':
-                time.sleep(1) # Allows some breathing room so describe_execution() isn't being called so quickly
+                time.sleep(1)  # Allows some breathing room so describe_execution() isn't being called so quickly
                 pass
 
             if sfn_details['status'] in 'TIMED_OUT':  # Timed out behavior might need to be adjusted later
