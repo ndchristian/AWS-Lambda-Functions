@@ -43,7 +43,7 @@ def loop(event, context):
                     try:
                         execution_details = sfn_client.describe_execution(executionArn=exe)['output']
                         if 'null' not in execution_details:  # Lambda function returns null if there is no output
-                            sfn_output.append(json.loads(execution_details['output']))
+                            sfn_output.append(json.loads(execution_details))
                         break
                     except KeyError:
                         time.sleep(1)
