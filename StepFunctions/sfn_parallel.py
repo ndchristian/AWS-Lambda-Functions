@@ -15,6 +15,7 @@ import json
 import time
 
 import boto3
+from botocore.exceptions import ClientError
 
 STATE_MACHINE_ARN = ""  # State Machine that you want to run in parallel
 
@@ -37,11 +38,21 @@ def loop(event, context):
 
     while sfn_executions:
         for exe in sfn_executions:
-            sfn_details = sfn_client.describe_execution(executionArn=exe)
+            try:
+                sfn_details = sfn_client.describe_execution(executionArn=exe)
+            except ClientError:
+                time.sleep(1)  # Back off for a second if throttling occurs
+                continue
+
             if sfn_details['status'] in 'SUCCEEDED':
                 for retry in range(3):  # Just in case AWS is just being slow with returning the outputs
                     try:
-                        execution_details = sfn_client.describe_execution(executionArn=exe)['output']
+                        try:
+                            execution_details = sfn_client.describe_execution(executionArn=exe)['output']
+                        except ClientError:
+                            time.sleep(1)  # Back off for a second if throttling occurs
+                            continue
+
                         if 'null' not in execution_details:  # Lambda function returns null if there is no output
                             sfn_output.append(json.loads(execution_details))
                         break
@@ -63,9 +74,3 @@ def loop(event, context):
 
     if sfn_output:  # Prevents the return of an empty list
         return sfn_output
-
-
-
-
-
-
